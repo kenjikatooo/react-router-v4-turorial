@@ -52,19 +52,57 @@ const About = () => (
     <p>フレンズに投票するページです</p>
   </div>
 )
-const Friends = () => (
+/* const Friends = () => (
   <div>
     <h2>Friends</h2>
     <Route exact path='/friends' component={FriendList} />
     <Route exact path='/friends/:id' component={Friend} />
   </div>
-)
+) */
 
-const FriendList = () => (
+class Friends extends Component {
+  constructor() {
+    super()
+    this.state = {}
+    this.handleVote = this.handleVote.bind(this)
+  }
+
+  componentWillMount() {
+    FRIENDS.forEach(friend => {
+      console.log(friend);
+      this.setState({
+        ...this.state,
+        [friend.id]: 0
+      })
+    })
+  }
+
+  handleVote = (id) => {
+    this.setState({
+      [id]: this.setState[id] + 1
+    })
+  }
+
+  render() {
+    return (
+      <div>
+        <h2>Friends</h2>
+        <Route exact path='/friends' render={props => <FriendList handleVote={this.handleVote} />} />
+        <Route path='/friends/:id' render={props => <Friend match={props.match} votes={this.state} />} />
+      </div>
+    )
+  }
+}
+
+const FriendList = props => (
   <div>
     {FRIENDS.map(friend => (
       <li key={friend.id}>
         <Link to={`/friends/${friend.id}`}>{friend.nameJa}</Link>
+        <button onClick={() => {
+          props.handleVote(friend.id)
+          console.log(props, friend.id);
+        }}>+</button>
       </li>
     ))}
   </div>
@@ -73,6 +111,7 @@ const FriendList = () => (
 const Friend = (props) => {
   const { id } = props.match.params
   const friend = friendById(id)
+  const vote = props.votes[id]
   if (typeof friend === 'undefined') {
     return (
       <div>
@@ -89,6 +128,7 @@ const Friend = (props) => {
         <h1 style={contentStyle}>{friend.nameJa}</h1>
         <p style={contentStyle}>{friend.nameEn}</p>
       </div>
+      <h1>投票数：{vote}</h1>
     </div>
   )
 }
